@@ -46,7 +46,7 @@ model Subject {
 // A practice object that holds repitition practices
 model Practice {
     // Generate for every practice item
-    id  String  @unique @default(uuid()) // maybe bigger / maybe uuid
+    id  String  @unique @default(uuid())
 
     // instantiate DateTime
     createdAt  DateTime  @default(now())
@@ -142,6 +142,5 @@ model Reflection {
     content  String  @default("")
 
     // generate composite id
-
     @@id([subjectId, id], name: "reflectionId")
 }

@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
             }
         });
 
-        console.log('Create 1 author with 2 quotes: ', defaultUser);
+        console.log('Created default user for debugging: ', defaultUser);
     } catch (e) {
         console.error(e);
         process.exit(1);
