@@ -1,12 +1,17 @@
 require('dotenv').config()
 const express = require('express');
 const utils = require('./utils/utils');
+const path = require("path");
+const { google } = require('googleapis');
 
 const app = express();
 const port = process.env.PORT || 3000;
 // use the JSON middleware
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "pug");
+app.use(express.static(path.join(__dirname, "public")));
 
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
@@ -24,14 +29,36 @@ prisma.$use(async (params, next) => {
     return result;
 });
 
-// basic response on '/'
+// Google Authentication OAuth2
+// const oauth2Client = new google.auth.OAuth2(
+//     process.env.CLIENT_ID,
+//     process.env.CLIENT_SECRET,
+//     'http://localhost:3000/auth/google/callback',
+// )
+
+// const redirectUrl = oauth2Client.generateAuthUrl({
+//     access_type: 'offline',
+//     prompt: 'consent',
+//     scope: ['email', 'profile', 'openID']
+// });
+
+let auth = false;
+
+// render the landing page!
 app.get('/', (req, res) => {
-    res.status(200).send('hello world!');
+    // let oauth2 = google.oath2({version: 'v2', auth: oauth2Client});
+    res.render("index", { title: "Autodidact"})
 });
 
-app.get('/users/:id', (req, res) => {
-
-})
+app.get('/auth/google/callback', async function (req, res) {
+    const code = req.query.code;
+    if (code) {
+        const { tokens } = await oauth2Client.getToken(code);
+        oauth2Client.setCredentials(tokens);
+        auth = true;
+    }
+    res.redirect('/');
+});
 
 // CRUD for users
 
@@ -731,7 +758,7 @@ app.put('/reflections', async (req, res) => {
     const title = req.body.title;
     const content = req.body.content;
 
-    if (!goalId) {
+    if (!reflectionId) {
         return res.status(400).json({ message: "Failed to provide goalId" });
     }
 
@@ -773,6 +800,8 @@ app.delete('/reflections', async (req, res) => {
         return res.status(500).json({ message: "Something went wrong" });
     }
 });
+
+
 
 // listen on port for incoming requests
 app.listen(port, () => {
